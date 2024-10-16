@@ -171,6 +171,7 @@ async fn handle_client(mut stream: TcpStream) -> Result<(), Socks5Error> {
 async fn parse_request(stream: &mut TcpStream) -> Result<Socks5Request, Socks5Error> {
     let mut buf = [0; 260];
     stream.read_exact(&mut buf[..4]).await?; // 前四个字节分别是 VER,CMD,RSV,ATYP
+    let version = buf[0];
     let command = match buf[1] {
         1 => Socks5Command::Connect,
         2 => Socks5Command::Bind,
@@ -214,7 +215,7 @@ async fn parse_request(stream: &mut TcpStream) -> Result<Socks5Request, Socks5Er
     };
     let port = stream.read_u16().await?;
     Ok(Socks5Request {
-        version: buf[0],
+        version,
         command,
         address_type,
         address,
